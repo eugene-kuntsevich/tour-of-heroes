@@ -1,40 +1,39 @@
-import { Component, OnInit } from '@angular/core';
+import {ChangeDetectionStrategy, Component, EventEmitter, Input, OnDestroy, OnInit, Output,} from '@angular/core';
+import {Subject} from 'rxjs';
+import {takeUntil} from 'rxjs/operators';
 
-import { Observable, Subject } from 'rxjs';
-
-import {
-  debounceTime, distinctUntilChanged, switchMap
-} from 'rxjs/operators';
-
-import { Hero } from '../hero';
-import { HeroService } from '../hero.service';
+import {Hero} from '../hero';
+import {HeroSearchPresenter} from './hero-search.presenter';
 
 @Component({
-  selector: 'app-hero-search',
-  templateUrl: './hero-search.component.html',
-  styleUrls: [ './hero-search.component.css' ]
+    selector: 'app-hero-search-ui',
+    templateUrl: './hero-search.component.html',
+    styleUrls: ['./hero-search.component.css'],
+    changeDetection: ChangeDetectionStrategy.OnPush,
+    providers: [HeroSearchPresenter],
 })
-export class HeroSearchComponent implements OnInit {
-  heroes$: Observable<Hero[]>;
-  private searchTerms = new Subject<string>();
+export class HeroSearchComponent implements OnDestroy, OnInit {
+    @Input() heroes: Hero[];
+    @Input() title: string;
+    @Output() search: EventEmitter<string> = new EventEmitter();
+    private destroy: Subject<void> = new Subject();
 
-  constructor(private heroService: HeroService) {}
+    constructor(private presenter: HeroSearchPresenter) {
+    }
 
-  // Push a search term into the observable stream.
-  search(term: string): void {
-    this.searchTerms.next(term);
-  }
+    ngOnInit(): void {
+        this.presenter.searchTerms$.pipe(
+            // complete when component is destroyed
+            takeUntil(this.destroy),
+        ).subscribe(term => this.search.emit(term));
+    }
 
-  ngOnInit(): void {
-    this.heroes$ = this.searchTerms.pipe(
-        // wait 300ms after each keystroke before considering the term
-        debounceTime(300),
+    ngOnDestroy(): void {
+        this.destroy.next();
+        this.destroy.complete();
+    }
 
-        // ignore new term if same as previous term
-        distinctUntilChanged(),
-
-        // switch to new search observable each time the term changes
-        switchMap((term: string) => this.heroService.searchHeroes(term)),
-    );
-  }
+    searchFor(term: string): void {
+        this.presenter.search(term);
+    }
 }

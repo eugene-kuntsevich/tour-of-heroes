@@ -1,10 +1,11 @@
-import {Component} from '@angular/core';
+import {ChangeDetectionStrategy, Component, Input} from '@angular/core';
 
 @Component({
-    selector: 'app-root',
+    changeDetection: ChangeDetectionStrategy.OnPush,
+    selector: 'app-root-ui',
     templateUrl: './app.component.html',
-    styleUrls: ['./app.component.css']
+    styleUrls: ['./app.component.css'],
 })
 export class AppComponent {
-    title = 'Tour of Heroes';
+    @Input() title: string;
 }
