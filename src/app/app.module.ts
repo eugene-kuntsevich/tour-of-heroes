@@ -12,7 +12,7 @@ import {HeroDetailPresentationComponent} from './hero-detail/hero-detail.present
 import {HeroDetailContainerComponent,} from './hero-detail/hero-detail.smart.component';
 import {HeroSearchComponent} from './hero-search/hero-search.component';
 import {HeroesPresentationComponent} from './heroes/heroes.presentation.component';
-import {HeroesContainerComponent} from './heroes/heroes.container';
+import {HeroesContainerComponent} from './heroes/heroes.smart.component';
 import {InMemoryDataService} from './in-memory-data.service';
 import {MessagesComponent} from './messages/messages.component';
 import {MessagesContainerComponent} from './messages/messages.container';

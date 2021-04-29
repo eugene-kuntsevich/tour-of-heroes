@@ -2,14 +2,14 @@ import {ChangeDetectionStrategy, Component, EventEmitter, Input, OnInit, Output,
 import {FormControl} from '@angular/forms';
 
 import {Hero} from '../hero';
-import {HeroesSmartComponent} from './heroes.smart.component';
+import {HeroesPresenterComponent} from './heroes.presenter.component';
 
 @Component({
     selector: 'app-heroes-ui',
     templateUrl: './heroes.presentation.component.html',
     styleUrls: ['./heroes.presentation.component.css'],
     changeDetection: ChangeDetectionStrategy.OnPush,
-    providers: [HeroesSmartComponent]
+    providers: [HeroesPresenterComponent]
 })
 export class HeroesPresentationComponent implements OnInit {
     @Input() heroes: Hero[];
@@ -21,7 +21,7 @@ export class HeroesPresentationComponent implements OnInit {
         return this.presenter.nameControl;
     }
 
-    constructor(private presenter: HeroesSmartComponent) {
+    constructor(private presenter: HeroesPresenterComponent) {
     }
 
     ngOnInit(): void {

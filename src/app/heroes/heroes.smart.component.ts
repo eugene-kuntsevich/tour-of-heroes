@@ -1,25 +1,50 @@
-import {Injectable, OnDestroy} from '@angular/core';
-import {FormControl} from '@angular/forms';
-import {Observable, Subject} from 'rxjs';
+import {ChangeDetectionStrategy, Component} from '@angular/core';
+import {noop, Observable, Subject} from 'rxjs';
+import {multiScan} from 'rxjs-multi-scan';
 
-@Injectable()
-export class HeroesSmartComponent implements OnDestroy {
-    private add: Subject<string> = new Subject();
-    add$: Observable<string> = this.add.asObservable();
-    nameControl = new FormControl('');
+import {Hero} from '../hero';
+import {HeroService} from '../hero.service';
 
-    ngOnDestroy(): void {
-        this.add.complete();
+@Component({
+    changeDetection: ChangeDetectionStrategy.OnPush,
+    selector: 'app-heroes',
+    template: `
+		<app-heroes-ui
+				[heroes]="heroes$ | async"
+				title="My Heroes"
+				(add)="add($event)"
+				(remove)="delete($event)"></app-heroes-ui>
+    `,
+})
+export class HeroesContainerComponent {
+    private heroAdd: Subject<Hero> = new Subject();
+    private heroRemove: Subject<Hero> = new Subject();
+
+    heroes$: Observable<Hero[]> = multiScan(
+        this.heroService.getHeroes(),
+        (heroes, loadedHeroes) => [...heroes, ...loadedHeroes],
+        this.heroAdd,
+        (heroes, hero) => [...heroes, hero],
+        this.heroRemove,
+        (heroes, hero) => heroes.filter(h => h !== hero),
+        []);
+
+    constructor(private heroService: HeroService) {
     }
 
-    public addHero(): void {
-        const name = this.nameControl.value.trim();
-        this.nameControl.setValue('');
+    add(name: string): void {
+        this.heroService.addHero({name} as Hero)
+            .subscribe({
+                next: h => this.heroAdd.next(h),
+                error: noop,
+            });
+    }
 
-        if (!name) {
-            return;
-        }
-
-        this.add.next(name);
+    delete(hero: Hero): void {
+        this.heroRemove.next(hero);
+        this.heroService.deleteHero(hero)
+            .subscribe({
+                error: () => this.heroAdd.next(hero),
+            });
     }
 }
